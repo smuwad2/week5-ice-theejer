@@ -31,34 +31,94 @@
             <p class="text-center">No items</p>
         </div>
     </div>
-    
+
     <script>
-        function getCategories() {
+        async function getCategories() {
             // Fetch categories from the server using Axios
             // and display them in the select element
             // url: http://localhost:3010/categories
+            try {
+                const response = await axios.get("/categories");
+                const categoryList = document.getElementById("selectCategory")
+                for (key in response.data) {
+                    var selectItem = document.createElement("option");
+                    selectItem.value = response.data[key];
+                    selectItem.innerText = response.data[key];
+                    categoryList.appendChild(selectItem);
+                }
+            }
+            catch (err) {
+                console.error(err);
+            }
 
         }
 
-        function showCategories(categories) {
-            // Display the categories in the select element
-            
-        }
 
-        function getItems() {
+        async function getItems() {
             // Fetch items based on the selected category
             // If "To select" is chosen, do nothing
             // If "All" is chosen, fetch all items
             // If a specific category is chosen, fetch items for that category
             // url: http://localhost:3010/items?category=categoryName
-            
+
+            var itemsList = document.getElementById("itemsList");
+            var category = document.getElementById("selectCategory").value;
+            while (document.getElementById("itemsList").firstChild) {
+                document.getElementById("itemsList").firstChild.remove();
+            }
+            if (category == "all") {
+                category = "";
+            }
+            else if (category == "0") {
+                var para = document.createElement("p");
+                para.className = "text-center";
+                para.innerText = "No items"
+                itemsList.appendChild(para);
+                return;
+            }
+            try {
+                const response = await axios.get("/items", {
+                    params: {
+                        category: category
+                    }
+                })
+                console.log(response);
+
+                var counter = 0;
+                for (i = 0; i < response.data.length; i++) {
+                    var cardDiv = document.createElement("div");
+                    cardDiv.className = "card col-2 my-3 p-4 text-center";
+                    var cardTitle = document.createElement("h5");
+                    cardTitle.className = "card-title";
+                    cardTitle.innerText = response.data[i]["name"];
+                    cardDiv.appendChild(cardTitle);
+                    var cardText = document.createElement("div");
+                    cardText.className = "card-text";
+                    cardText.innerText = "Price: $" + response.data[i]["price"];
+                    cardDiv.appendChild(cardText);
+                    itemsList.appendChild(cardDiv);
+                    if (counter < 2) {
+                        var spaceDiv = document.createElement("div");
+                        spaceDiv.className = "col-3";
+                        itemsList.appendChild(spaceDiv);
+                        counter += 1;
+                    }
+                    else {
+                        counter = 0;
+                    }
+                }
+            }
+            catch (err) {
+                console.error(err);
+            }
+
         }
 
         function showItems(items) {
             // Display the items in the itemsList div
             // Each item should be displayed in a bootstrap card format
             // The display should be responsive 3 columns on large screens, 2 columns on medium screens, and 1 column on small screens
-            
+
 
         }
 
